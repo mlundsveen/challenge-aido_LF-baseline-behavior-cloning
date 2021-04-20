@@ -9,12 +9,12 @@ workflows:
 jobs:
   submit:
     docker:
-      - image: registry-stage.duckietown.org/duckietown/aido-submission-ci-test:daffy
+      - image: registry-stage2.duckietown.org/duckietown/aido-submission-ci-test:daffy
     steps:
       - checkout
       - setup_remote_docker:
           docker_layer_caching: true
-      
+
       - run:
           name: Setup daffy commands
           # language=bash
@@ -22,7 +22,7 @@ jobs:
             dts --set-version daffy
             dts update
             pip3 install -U  "duckietown-docker-utils-daffy>=6.0.55"
-      
+
       - run:
           name: Setup token
           # language=bash
@@ -30,7 +30,7 @@ jobs:
             dts challenges config --docker-username $DOCKER_HUB_USERNAME --docker-password $DOCKER_HUB_PASSWORD
             dts tok verify ${token_dt1_bea}
             dts tok set ${token_dt1_bea}
-      
+
       - run:
           name: "Challenges info"
           # language=bash
