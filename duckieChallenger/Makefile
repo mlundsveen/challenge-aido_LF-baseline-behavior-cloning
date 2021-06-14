@@ -8,8 +8,8 @@ push: build
 	dts build_utils aido-container-push --use-branch daffy
 
 
-submit: 
+submit:
 	dts challenges submit
 
 submit-bea:
-	dts challenges submit --impersonate 1639 --challenge all --retire-same-label
+	dts challenges submit --impersonate 1639 --challenge 'aido-LF*' --retire-same-label
