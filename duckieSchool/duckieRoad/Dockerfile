@@ -11,7 +11,7 @@ WORKDIR /workspace
 # you can add more if you need to in requirements.txt
 COPY requirements.txt ./
 RUN pip3 install -U "pip>=20.2"
-RUN  pip3 install --use-feature=2020-resolver -r requirements.txt
+RUN  pip3 install  -r requirements.txt
 
 
 # if you have more file use the COPY command to move them to the workspace
