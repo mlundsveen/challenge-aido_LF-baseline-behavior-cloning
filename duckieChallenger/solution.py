@@ -1,24 +1,36 @@
 #!/usr/bin/env python3
-import os
 from typing import Tuple
 
 import cv2
 import numpy as np
 
-from aido_schemas import (Context, DB20Commands, DB20Observations, EpisodeStart, JPGImage, LEDSCommands,
-                          logger, protocol_agent_DB20, PWMCommands, RGB, wrap_direct)
+from aido_schemas import (
+    Context,
+    DB20Commands,
+    DB20Observations,
+    EpisodeStart,
+    JPGImage,
+    LEDSCommands,
+    logger,
+    no_hardware_GPU_available,
+    protocol_agent_DB20,
+    PWMCommands,
+    RGB,
+    wrap_direct,
+)
 from helperFncs import image_resize
 
 
 def limit_gpu_memory(memory_limit=1024):
-    """ Restricts TensorFlow to only allocated 1GB of memory on the first GPU"""
+    """Restricts TensorFlow to only allocated 1GB of memory on the first GPU"""
     import tensorflow as tf
-    physical_gpus = tf.config.experimental.list_physical_devices('GPU')
+
+    physical_gpus = tf.config.experimental.list_physical_devices("GPU")
     if physical_gpus:
         try:
             c = [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=memory_limit)]
             tf.config.experimental.set_virtual_device_configuration(physical_gpus[0], c)
-            logical_gpus = tf.config.experimental.list_logical_devices('GPU')
+            logical_gpus = tf.config.experimental.list_logical_devices("GPU")
             logger.info(num_physical_gpus=len(physical_gpus), num_logical_gpus=len(logical_gpus))
         except RuntimeError as e:
             # Virtual devices must be set before GPUs have been initialized
@@ -35,29 +47,27 @@ class DuckieChallenger:
         context.info("Check GPU...")
 
         limit_gpu_memory()
-        self.check_tensorflow_gpu()
+        self.check_tensorflow_gpu(context)
 
         from frankModel import FrankNet
         from helperFncs import SteeringToWheelVelWrapper
+
         self.convertion_wrapper = SteeringToWheelVelWrapper()
 
-        context.info('init()')
+        context.info("init()")
         self.model = FrankNet.build(200, 150)
         self.model.load_weights("FrankNet.h5")
         self.current_image = np.zeros(self.expect_shape)
         self.input_image = np.zeros((150, 200, 3))
         self.to_predictor = np.expand_dims(self.input_image, axis=0)
 
-    def check_tensorflow_gpu(self):
+    def check_tensorflow_gpu(self, context):
         import tensorflow as tf
-        req = os.environ.get('AIDO_REQUIRE_GPU', None)
+
         name = tf.test.gpu_device_name()
-        logger.info(f'gpu_device_name: {name!r} AIDO_REQUIRE_GPU = {req!r}')
-        if req is not None:
-            if not name:  # None or ''
-                msg = 'Could not find gpu device.'
-                logger.error(msg)
-                raise RuntimeError(msg)
+
+        if not name:  # None or ''
+            no_hardware_GPU_available(context)
 
     def on_received_seed(self, data: int):
         np.random.seed(data)
@@ -96,18 +106,19 @@ class DuckieChallenger:
         # ! Send PWM Command
         pwm_commands = PWMCommands(motor_left=pwm_left, motor_right=pwm_right)
         commands = DB20Commands(pwm_commands, led_commands)
-        context.write('commands', commands)
+        context.write("commands", commands)
 
     def finish(self, context: Context):
-        context.info('finish()')
+        context.info("finish()")
 
 
 def jpg2rgb(image_data: bytes) -> np.ndarray:
-    """ Reads JPG bytes as RGB"""
+    """Reads JPG bytes as RGB"""
     from PIL import Image
     import io
+
     im = Image.open(io.BytesIO(image_data))
-    im = im.convert('RGB')
+    im = im.convert("RGB")
     data = np.array(im)
     assert data.ndim == 3
     assert data.dtype == np.uint8
@@ -120,5 +131,5 @@ def main():
     wrap_direct(node=node, protocol=protocol)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
