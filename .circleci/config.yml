@@ -44,4 +44,4 @@ jobs:
           command: |
             # this does not matter on the staging server
             cd duckieChallenger
-            make submit-bea
+            dts challenges evaluate --challenge aido-hello-sim-validation
