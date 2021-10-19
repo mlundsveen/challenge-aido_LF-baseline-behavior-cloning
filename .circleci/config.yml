@@ -27,7 +27,7 @@ jobs:
           name: Setup token
           # language=bash
           command: |
-            dts challenges config --docker-username $DOCKER_HUB_USERNAME --docker-password $DOCKER_HUB_PASSWORD
+            dts challenges config --docker-username $DOCKER_USERNAME --docker-password $DOCKER_PASSWORD
             dts tok verify ${token_dt1_bea}
             dts tok set ${token_dt1_bea}
 
