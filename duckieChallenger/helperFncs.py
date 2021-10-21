@@ -1,11 +1,11 @@
 import cv2
 import numpy as np
 
-__all__ = ['SteeringToWheelVelWrapper', 'image_resize']
+__all__ = ["SteeringToWheelVelWrapper", "image_resize"]
 
 
 class SteeringToWheelVelWrapper:
-    """ Converts policy that was trained with [velocity|heading] actions to
+    """Converts policy that was trained with [velocity|heading] actions to
     [wheelvel_left|wheelvel_right] to comply with AIDO evaluation format
     """
 
@@ -56,6 +56,7 @@ class SteeringToWheelVelWrapper:
 
 
 # ! Resize Image: uses interpolation method
+
 
 def image_resize(image, width=None, height=None, inter=cv2.INTER_AREA):
     # initialize the dimensions of the image to be resized and

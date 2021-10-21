@@ -12,6 +12,7 @@ class Step:
     action: List[float] = field(default_factory=list)
     done: bool = False
 
+
 @dataclass
 class Episode:
     steps: List[Step] = field(default_factory=list)

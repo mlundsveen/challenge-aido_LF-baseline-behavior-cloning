@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-This is based on Frank's script to log runs using ground truth 
+This is based on Frank's script to log runs using ground truth
 """
 
 import argparse
@@ -22,6 +22,7 @@ from gym_duckietown.envs import DuckietownEnv
 
 REWARD_INVALID_POSE = -1000
 
+
 class DataGenerator:
     def __init__(self, env, max_episodes, max_steps, log_file=None, downscale=False):
         if not log_file:
@@ -36,9 +37,7 @@ class DataGenerator:
         #! Enter main event loop
         print("Starting data generation")
 
-        pyglet.clock.schedule_interval(
-            self.update, 1.0 / self.env.unwrapped.frame_rate, self.env
-        )
+        pyglet.clock.schedule_interval(self.update, 1.0 / self.env.unwrapped.frame_rate, self.env)
 
         pyglet.app.run()
 
@@ -84,9 +83,7 @@ class DataGenerator:
         """
 
         # Find the curve point closest to the agent, and the tangent at that point
-        closest_point, closest_tangent = env.closest_curve_point(
-            env.cur_pos, env.cur_angle
-        )
+        closest_point, closest_tangent = env.closest_curve_point(env.cur_pos, env.cur_angle)
 
         iterations = 0
 
@@ -172,23 +169,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--env-name", default=None)
     parser.add_argument("--map-name", default="zigzag_dists")
-    parser.add_argument(
-        "--draw-curve", default=False, help="draw the lane following curve"
-    )
-    parser.add_argument(
-        "--draw-bbox", default=False, help="draw collision detection bounding boxes"
-    )
-    parser.add_argument(
-        "--domain-rand", default=False, help="enable domain randomization"
-    )
+    parser.add_argument("--draw-curve", default=False, help="draw the lane following curve")
+    parser.add_argument("--draw-bbox", default=False, help="draw collision detection bounding boxes")
+    parser.add_argument("--domain-rand", default=False, help="enable domain randomization")
     parser.add_argument("--distortion", default=True)
 
-    parser.add_argument(
-        "--raw-log", default=False, help="enables recording high resolution raw log"
-    )
-    parser.add_argument(
-        "--steps", default=1000, help="number of steps to record in one batch", type=int
-    )
+    parser.add_argument("--raw-log", default=False, help="enables recording high resolution raw log")
+    parser.add_argument("--steps", default=1000, help="number of steps to record in one batch", type=int)
     parser.add_argument("--nb-episodes", default=10, type=int)
     parser.add_argument("--logfile", type=str, default=None)
     parser.add_argument("--downscale", action="store_true")
@@ -210,4 +197,10 @@ if __name__ == "__main__":
     else:
         env = gym.make(env=args.env_name)
 
-    node = DataGenerator(env, max_episodes=args.nb_episodes, max_steps=args.steps, log_file=args.logfile, downscale = args.downscale)
+    node = DataGenerator(
+        env,
+        max_episodes=args.nb_episodes,
+        max_steps=args.steps,
+        log_file=args.logfile,
+        downscale=args.downscale,
+    )

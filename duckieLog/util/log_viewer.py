@@ -34,9 +34,7 @@ class LogViewer:
     @episode_index.setter
     def episode_index(self, value):
         self._current_episode = value
-        self._episode_label.set(
-            EPISODE_LABEL.format(self._current_episode, self.nb_episodes)
-        )
+        self._episode_label.set(EPISODE_LABEL.format(self._current_episode, self.nb_episodes))
 
     @property
     def FPS(self):
@@ -55,9 +53,7 @@ class LogViewer:
     def nb_episodes(self, value):
         self._nb_episodes = value
         try:
-            self._episode_label.set(
-                EPISODE_LABEL.format(self._current_episode, self.nb_episodes)
-            )
+            self._episode_label.set(EPISODE_LABEL.format(self._current_episode, self.nb_episodes))
         except AttributeError:
             pass
 
@@ -110,9 +106,7 @@ class LogViewer:
 
         # Observation streaming panel
         self.stream_panel = tk.Label(self.root, borderwidth=2, relief="groove")
-        self.stream_panel.pack(
-            side=tk.TOP, fill="both", expand="yes"
-        )  # , fill="both", expand="yes")
+        self.stream_panel.pack(side=tk.TOP, fill="both", expand="yes")  # , fill="both", expand="yes")
 
         # Information frame
         self.info_frame = tk.Frame(self.root)
@@ -136,24 +130,16 @@ class LogViewer:
         self.info_fps = tk.Label(self.info_frame, textvariable=self._fps_label)
         self.info_fps.grid(row=1, column=1, sticky=tk.W)
 
-        self.info_speeddown = tk.Button(
-            self.info_frame, text="slower", command=self.speeddown
-        )
+        self.info_speeddown = tk.Button(self.info_frame, text="slower", command=self.speeddown)
         self.info_speeddown.grid(row=2, column=0)
 
-        self.info_speedup = tk.Button(
-            self.info_frame, text="faster", command=self.speedup
-        )
+        self.info_speedup = tk.Button(self.info_frame, text="faster", command=self.speedup)
         self.info_speedup.grid(row=2, column=1)
 
-        self.info_button_prev = tk.Button(
-            self.info_frame, text="<<", command=self.previous_episode
-        )
+        self.info_button_prev = tk.Button(self.info_frame, text="<<", command=self.previous_episode)
         self.info_button_prev.grid(row=3, column=0)
 
-        self.info_button_next = tk.Button(
-            self.info_frame, text=">>", command=self.next_episode
-        )
+        self.info_button_next = tk.Button(self.info_frame, text=">>", command=self.next_episode)
         self.info_button_next.grid(row=3, column=1)
 
     def bind_keys(self):
@@ -299,7 +285,7 @@ class LogViewer:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--log_name', default="dataset.log")
+    parser.add_argument("--log_name", default="dataset.log")
     args = parser.parse_args()
     FILE_NAME = args.log_name
     LogViewer()

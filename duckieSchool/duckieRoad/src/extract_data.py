@@ -12,13 +12,12 @@ from log_util import Logger
 from log_schema import Episode, Step
 import cv2
 
-VEHICLE_NAME = 'avlduck2'
+VEHICLE_NAME = "avlduck2"
 
 # A collection of ros messages coming from a single topic.
-MessageCollection = collections.namedtuple(
-    "MessageCollection", ["topic", "type", "messages"])
+MessageCollection = collections.namedtuple("MessageCollection", ["topic", "type", "messages"])
 
-frank_logger = Logger(log_file='converted/dataset.log')
+frank_logger = Logger(log_file="converted/dataset.log")
 
 
 def extract_messages(path, requested_topics):
@@ -37,10 +36,10 @@ def extract_messages(path, requested_topics):
     extracted_messages = {}
     for topic in requested_topics:
         if topic not in available_topics:
-            raise ValueError(
-                "Could not find the requested topic (%s) in the bag %s" % (topic, path))
+            raise ValueError("Could not find the requested topic (%s) in the bag %s" % (topic, path))
         extracted_messages[topic] = MessageCollection(
-            topic=topic, type=available_topics[topic].msg_type, messages=[])
+            topic=topic, type=available_topics[topic].msg_type, messages=[]
+        )
 
     for msg in bag.read_messages():
         topic = msg.topic
@@ -59,14 +58,14 @@ def main():
         # the duckiebot name can change from one bag file to the other, so define
         # the topics WITHOUT the duckiebot name in the beginning
         "/camera_node/image/compressed",
-        "/joy"
+        "/joy",
     ]
 
     # define the bags_directory in order to extract the data
     bags_directory = os.path.join(os.getcwd(), "bag_files")
 
     # define data_directory
-    data_directory = 'converted'
+    data_directory = "converted"
     if not os.path.exists(data_directory):
         os.makedirs(data_directory)
 
@@ -86,7 +85,7 @@ def main():
         bag_ID = file.partition(".bag")[0]
 
         # extract the duckiebot name to complete the definition of the nodes
-        #duckiebot_name = file.partition("_")[2].partition(".bag")[0]
+        # duckiebot_name = file.partition("_")[2].partition(".bag")[0]
         duckiebot_name = VEHICLE_NAME
         # complete the topics names with the duckiebot name in the beginning
         ros_topics_temp = copy(ros_topics)
@@ -112,8 +111,7 @@ def main():
         # easy way to find the structure of your ros messages : print dir(msgs[name_of_topic])
 
         # extract the images and car_cmds messages
-        ext_images = msgs["/" + duckiebot_name +
-                          "/camera_node/image/compressed"].messages
+        ext_images = msgs["/" + duckiebot_name + "/camera_node/image/compressed"].messages
         ext_car_cmds = msgs["/" + duckiebot_name + "/joy"].messages
 
         # create dataframe with the images and the images' timestamps
@@ -129,13 +127,9 @@ def main():
 
             # hack to get the timestamp of each image in <float 'secs.nsecs'> format instead of <int 'rospy.rostime.Time'>
             temp_timestamp = ext_images[num].timestamp
-            img_timestamp = temp_timestamp.secs + temp_timestamp.nsecs * \
-                10 ** -len(str(temp_timestamp.nsecs))
+            img_timestamp = temp_timestamp.secs + temp_timestamp.nsecs * 10 ** -len(str(temp_timestamp.nsecs))
 
-            temp_df = pd.DataFrame({
-                'img': [img],
-                'img_timestamp': [img_timestamp]
-            })
+            temp_df = pd.DataFrame({"img": [img], "img_timestamp": [img_timestamp]})
 
             if num == 0:
                 df_imgs = temp_df.copy()
@@ -149,14 +143,15 @@ def main():
             cmd_msg = cmd.message
             # hack to get the timestamp of each image in <float 'secs.nsecs'> format instead of <int 'rospy.rostime.Time'>
             temp_timestamp = ext_car_cmds[num].timestamp
-            vel_timestamp = temp_timestamp.secs + temp_timestamp.nsecs * \
-                10 ** -len(str(temp_timestamp.nsecs))
+            vel_timestamp = temp_timestamp.secs + temp_timestamp.nsecs * 10 ** -len(str(temp_timestamp.nsecs))
 
-            temp_df = pd.DataFrame({
-                'vel_timestamp': [vel_timestamp],
-                'vel_linear': [cmd_msg.axes[1]],
-                'vel_angular': [cmd_msg.axes[3]],
-            })
+            temp_df = pd.DataFrame(
+                {
+                    "vel_timestamp": [vel_timestamp],
+                    "vel_linear": [cmd_msg.axes[1]],
+                    "vel_angular": [cmd_msg.axes[3]],
+                }
+            )
             if num == 0:
                 df_cmds = temp_df.copy()
             else:
@@ -166,8 +161,7 @@ def main():
         print()
         print("Starting synchronization of data for {} file.".format(file))
 
-        temp_synch_data, temp_synch_imgs = synchronize_data(
-            df_imgs, df_cmds, bag_ID)
+        temp_synch_data, temp_synch_imgs = synchronize_data(df_imgs, df_cmds, bag_ID)
 
         if first_time:
             synch_data = copy(temp_synch_data)
@@ -177,15 +171,17 @@ def main():
             synch_data = np.vstack((synch_data, temp_synch_data))
             synch_imgs = np.vstack((synch_imgs, temp_synch_imgs))
 
-        print("\nShape of total data: {} , shape of total images: {}\n".format(
-            synch_data.shape, synch_imgs.shape))
+        print(
+            "\nShape of total data: {} , shape of total images: {}\n".format(
+                synch_data.shape, synch_imgs.shape
+            )
+        )
 
         for i in range(synch_data.shape[0]):
             action = synch_data[i]
-            tobelogged_action = np.array([action[2], action[3]],dtype=float)
-            tobelogged_image = synch_imgs[i*150:(i+1)*150, :, :]
-            tobelogged_image = cv2.cvtColor(
-                tobelogged_image, cv2.COLOR_BGR2YUV)
+            tobelogged_action = np.array([action[2], action[3]], dtype=float)
+            tobelogged_image = synch_imgs[i * 150 : (i + 1) * 150, :, :]
+            tobelogged_image = cv2.cvtColor(tobelogged_image, cv2.COLOR_BGR2YUV)
             done = False if (i < synch_data.shape[0]) else True
             step = Step(tobelogged_image, None, tobelogged_action, done)
             frank_logger.log(step, None)

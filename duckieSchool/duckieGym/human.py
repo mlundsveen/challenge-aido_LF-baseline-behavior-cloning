@@ -21,8 +21,18 @@ from pyglet.window import key
 
 from gym_duckietown.envs import DuckietownEnv
 
+
 class HumanDriver:
-    def __init__(self, env, max_episodes, max_steps, log_file=None, downscale=False,playback=True,filter_bad_data=False):
+    def __init__(
+        self,
+        env,
+        max_episodes,
+        max_steps,
+        log_file=None,
+        downscale=False,
+        playback=True,
+        filter_bad_data=False,
+    ):
         if not log_file:
             log_file = f"dataset.log"
         self.env = env
@@ -35,11 +45,10 @@ class HumanDriver:
         self.last_reward = 0
         self.playback_buffer = []
         #! Enter main event loop
-        pyglet.clock.schedule_interval(
-            self.update, 1.0 / self.env.unwrapped.frame_rate, self.env)
+        pyglet.clock.schedule_interval(self.update, 1.0 / self.env.unwrapped.frame_rate, self.env)
         #! Get Joystick
         self.joysticks = pyglet.input.get_joysticks()
-        assert self.joysticks, 'No joystick device is connected'
+        assert self.joysticks, "No joystick device is connected"
         self.joystick = self.joysticks[0]
         self.joystick.open()
         self.joystick.push_handlers(self.on_joybutton_press)
@@ -61,34 +70,32 @@ class HumanDriver:
         #! Render Image
         if args.playback:
             for entry in self.playback_buffer:
-                (recorded,action,reward)=entry
+                (recorded, action, reward) = entry
                 x = action[0]
                 z = action[1]
                 canvas = cv2.cvtColor(recorded, cv2.COLOR_BGR2RGB)
                 #! Speed bar indicator
-                cv2.rectangle(canvas, (20, 240), (50, int(240-220*x)),
-                            (76, 84, 255), cv2.FILLED)
-                cv2.rectangle(canvas, (320, 430), (int(320-150*z), 460),
-                            (76, 84, 255), cv2.FILLED)
+                cv2.rectangle(canvas, (20, 240), (50, int(240 - 220 * x)), (76, 84, 255), cv2.FILLED)
+                cv2.rectangle(canvas, (320, 430), (int(320 - 150 * z), 460), (76, 84, 255), cv2.FILLED)
 
-                cv2.imshow('Playback', canvas)
+                cv2.imshow("Playback", canvas)
                 cv2.waitKey(20)
         #! User interaction for log commitment
-        qa = input('1 to commit, 2 to abort:        ')
-        while not(qa == '1' or qa == '2'):
-            qa = input('1 to commit, 2 to abort:        ')
-        if qa == '2':
+        qa = input("1 to commit, 2 to abort:        ")
+        while not (qa == "1" or qa == "2"):
+            qa = input("1 to commit, 2 to abort:        ")
+        if qa == "2":
             self.datagen.reset_episode()
-            print('Reset log. Discard current...')
+            print("Reset log. Discard current...")
         else:
             print("Comitting Episode")
             self.datagen.on_episode_done()
-        self.playback_buffer = [] # reset playback buffer
-        return        
+        self.playback_buffer = []  # reset playback buffer
+        return
 
-    def image_resize(self,image, width=None, height=None, inter=cv2.INTER_AREA):
+    def image_resize(self, image, width=None, height=None, inter=cv2.INTER_AREA):
         """
-        Resize an image with a given width or a given height 
+        Resize an image with a given width or a given height
         and preserve the aspect ratio.
         """
         dim = None
@@ -104,13 +111,13 @@ class HumanDriver:
         resized = cv2.resize(image, dim, interpolation=inter)
         return resized
 
-    def on_key_press(self,symbol, modifiers):
+    def on_key_press(self, symbol, modifiers):
         """
         This handler processes keyboard commands that
         control the simulation
         """
         if symbol == key.BACKSPACE or symbol == key.SLASH:
-            print('RESET')
+            print("RESET")
             self.playback()
             self.env.reset()
             self.env.render()
@@ -121,8 +128,8 @@ class HumanDriver:
         elif symbol == key.ESCAPE or symbol == key.Q:
             self.env.close()
             sys.exit(0)
-    
-    def on_joybutton_press(self,joystick, button):
+
+    def on_joybutton_press(self, joystick, button):
         """
         Event Handler for Controller Button Inputs
         Relevant Button Definitions:
@@ -131,13 +138,13 @@ class HumanDriver:
 
         # Y Button
         if button == 3:
-            print('RESET')
+            print("RESET")
             self.playback()
             self.env.reset()
             self.env.render()
             self.sleep_after_reset(5)
 
-    def update(self,dt,env):
+    def update(self, dt, env):
         """
         This function is called at every frame to handle
         movement/stepping and redrawing
@@ -150,7 +157,7 @@ class HumanDriver:
         #! Nominal Joystick Interpretation
         x = round(self.joystick.y, 2) * 0.9  # To ensure maximum trun/velocity ratio
         z = round(self.joystick.z, 2) * 3.0
-        
+
         #! Joystick deadband
         # if (abs(round(joystick.y, 2)) < 0.01):
         #     z = 0.0
@@ -170,10 +177,9 @@ class HumanDriver:
         (obs, reward, done, info) = self.env.step(action)
 
         if reward != -1000:
-            print('Current Command: ', action,
-                  ' speed. Score: ', reward)
-            if ((reward > self.last_reward-0.02) or not self.filter_bad_data):
-                print('log')
+            print("Current Command: ", action, " speed. Score: ", reward)
+            if (reward > self.last_reward - 0.02) or not self.filter_bad_data:
+                print("log")
 
                 #! resize to Nvidia standard:
                 obs_distorted_DS = self.image_resize(obs, width=200)
@@ -184,15 +190,15 @@ class HumanDriver:
 
                 # NOTICE: OpenCV changes the order of the channels !!!
                 cropped_final = cv2.cvtColor(cropped, cv2.COLOR_BGR2YUV)
-                self.playback_buffer.append((obs,action,reward))
+                self.playback_buffer.append((obs, action, reward))
                 step = Step(cropped_final, reward, action, done)
                 self.datagen.log(step, info)
                 self.last_reward = reward
             else:
-                print('Bad Training Data! Discarding...')
+                print("Bad Training Data! Discarding...")
                 self.last_reward = reward
         else:
-            print('!!!OUT OF BOUND!!!')
+            print("!!!OUT OF BOUND!!!")
 
         if done:
             self.playback()
@@ -204,27 +210,23 @@ class HumanDriver:
         self.env.render()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     #! Parser sector:
     parser = argparse.ArgumentParser()
-    parser.add_argument('--env-name', default=None)
-    parser.add_argument('--map-name', default='loop_pedestrians')
-    parser.add_argument('--draw-curve', default=False,
-                        help='draw the lane following curve')
-    parser.add_argument('--draw-bbox', default=False,
-                        help='draw collision detection bounding boxes')
-    parser.add_argument('--domain-rand', default=False,
-                        help='enable domain randomization')
-    parser.add_argument('--playback', default=True,
-                        help='enable playback after each session')
-    parser.add_argument('--distortion', default=True)
-    parser.add_argument('--steps', default=1500,
-                        help='number of steps to record in one batch')
-    parser.add_argument("--nb-episodes", default=100,
-                        help='set the total episoded number', type=int)
+    parser.add_argument("--env-name", default=None)
+    parser.add_argument("--map-name", default="loop_pedestrians")
+    parser.add_argument("--draw-curve", default=False, help="draw the lane following curve")
+    parser.add_argument("--draw-bbox", default=False, help="draw collision detection bounding boxes")
+    parser.add_argument("--domain-rand", default=False, help="enable domain randomization")
+    parser.add_argument("--playback", default=True, help="enable playback after each session")
+    parser.add_argument("--distortion", default=True)
+    parser.add_argument("--steps", default=1500, help="number of steps to record in one batch")
+    parser.add_argument("--nb-episodes", default=100, help="set the total episoded number", type=int)
     parser.add_argument("--logfile", type=str, default=None)
     parser.add_argument("--downscale", action="store_true")
-    parser.add_argument("--filter-bad-data",action="store_true",help="discard data when reward is decreasing")
+    parser.add_argument(
+        "--filter-bad-data", action="store_true", help="discard data when reward is decreasing"
+    )
     args = parser.parse_args()
 
     #! Start Env
@@ -242,10 +244,12 @@ if __name__ == '__main__':
     else:
         env = gym.make(args.env_name)
 
-    node = HumanDriver(env,
-                        max_episodes=args.nb_episodes, 
-                        max_steps=args.steps, 
-                        log_file=args.logfile, 
-                        downscale = args.downscale,
-                        playback=args.playback,
-                        filter_bad_data=args.filter_bad_data)
+    node = HumanDriver(
+        env,
+        max_episodes=args.nb_episodes,
+        max_steps=args.steps,
+        log_file=args.logfile,
+        downscale=args.downscale,
+        playback=args.playback,
+        filter_bad_data=args.filter_bad_data,
+    )

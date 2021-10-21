@@ -59,16 +59,15 @@ class FrankNetVisualizer:
         print("Current setup:")
         self.illustrative_model.summary()
 
-
     def visualize(self):
         to_visualize = []
         layer_name = []
         for i in range(len(self.model.layers)):
             layer = self.model.layers[i]
-            if 'conv' not in layer.name:
+            if "conv" not in layer.name:
                 continue
             to_visualize.append(i)
-            layer_name.append(""+str(i)+str(layer.name)+str(layer.output.shape))
+            layer_name.append("" + str(i) + str(layer.name) + str(layer.output.shape))
             print(i, layer.name, layer.output.shape)
         self.redefine_model(to_visualize)
         feature_maps = self.illustrative_model.predict(self.processed_img)
@@ -84,7 +83,7 @@ class FrankNetVisualizer:
                     ax.set_yticks([])
                     # plot filter channel in grayscale
                     try:
-                        plt.imshow(fmap[0, :, :, ix-1], cmap='gray')
+                        plt.imshow(fmap[0, :, :, ix - 1], cmap="gray")
                     except Exception:
                         continue
                     ix += 1
@@ -93,6 +92,6 @@ class FrankNetVisualizer:
             plt.show()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     node = FrankNetVisualizer("FrankNet.h5", "curve.jpg")
     node.visualize()

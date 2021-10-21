@@ -4,11 +4,12 @@ import os
 import pickle
 import numpy as np
 
-from typing import List,Dict
+from typing import List, Dict
 
 from log_schema import Episode, Step
 
 SCHEMA_VERSION = "1.0.0"
+
 
 class Logger:
     def __init__(self, env, log_file):
@@ -16,7 +17,7 @@ class Logger:
         self.episode = Episode(version=SCHEMA_VERSION)
         self.episode_count = 0
 
-        self._log_file = open(log_file, 'wb')
+        self._log_file = open(log_file, "wb")
         # we log the data in a multithreaded fashion
         self._multithreaded_recording = ThreadPoolExecutor(4)
         # self.recording = []
