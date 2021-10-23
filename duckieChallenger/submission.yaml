@@ -9,3 +9,4 @@ user-payload:
         gpu: 1
 description: |
     Behavior cloning baseline.
+validation_challenge: aido-hello-sim-validation
