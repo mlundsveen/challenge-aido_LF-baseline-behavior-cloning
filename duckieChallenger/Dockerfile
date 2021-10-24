@@ -14,9 +14,7 @@ RUN python3 -m pip install  -r .requirements.txt
 
 # Copy all solution files to workspace
 WORKDIR /submission
-COPY solution.py /submission
-COPY FrankNet.h5 /submission
-COPY helperFncs.py /submission
-COPY frankModel.py /submission
+COPY *.py .
+COPY FrankNet.h5 .
 
 ENTRYPOINT ["python3", "solution.py"]
