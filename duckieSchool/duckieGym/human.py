@@ -156,7 +156,7 @@ class HumanDriver:
 
         #! Nominal Joystick Interpretation
         x = round(self.joystick.y, 2) * 0.9  # To ensure maximum trun/velocity ratio
-        z = round(self.joystick.z, 2) * 3.0
+        z = round(self.joystick.rx, 2) * 3.0
 
         #! Joystick deadband
         # if (abs(round(joystick.y, 2)) < 0.01):
